@@ -7,6 +7,8 @@ package truc;
 
 import java.util.*;
 
+import javafx.scene.shape.Polygon;
+
 // point structure with x,y are coordinates
 class Point{
 	public double x, y;
@@ -38,6 +40,44 @@ class Point{
 	public String toString(){
 		return this.x+" "+this.y;
 	}
+	
+	
+	public Polygon ptsDans(LinkedList<LinkedList<Double>> l_l_triangles, LinkedList<Polygon> l_obs, CustomPanel pan){
+		boolean test; int i;
+		Polygon res = null;
+		for (int k=0; k<l_l_triangles.size(); k++){
+			for (int j = 0; j < l_l_triangles.get(k).size() / 6; j++) {//TEST DE COLLISION
+				LinkedList<Double> tri = new LinkedList<Double>();
+				test = false;
+				int valeur=0;
+				for (i = 6 * j; i < 6 * j + 6; i++)
+					tri.add(l_l_triangles.get(k).get(i));
+				for (i = 0; i < 3; i++) {
+					double Ax = tri.get((2 * i) % 6);
+					double Ay = tri.get((2 * i + 1) % 6);
+					double Bx = tri.get((2 * i + 2) % 6);
+					double By = tri.get((2 * i + 3) % 6);
+					double Dx = Bx - Ax;
+					double Dy = By - Ay;
+					double Tx = this.x - Ax;
+					double Ty = this.y - Ay;
+					double d = Dx * Ty - Dy * Tx;
+					if (valeur==0){
+						if (d > 0) valeur = 1;
+						if (d < 0) valeur = -1;
+					}else{
+						if ((d > 0 & valeur==-1) | (d < 0 & valeur==1)) test = true;	
+					}
+				}
+				if (test == false) {
+					res=l_obs.get(k);
+				}
+			}
+		}
+		return res;
+	}
+		
+		
 	
 }
 
@@ -349,7 +389,7 @@ class MyPolygon{
 	}
 	
 	// add a vertex
-	public void addVertex(int _x, int _y){
+	public void addVertex(double _x, double _y){
 		Point p = new Point(_x, _y);
 		vertices.add(p);
 		

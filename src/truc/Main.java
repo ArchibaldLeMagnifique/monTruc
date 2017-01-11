@@ -13,6 +13,8 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
@@ -33,14 +35,20 @@ public class Main extends Application {
 	Joueur j;
 	boolean clicDroit = false;
 	boolean spaceKey = false;
-
+	double mouseX, mouseY;
+	
+	boolean tirer = false;
+	int choixArme = 1;
+	int nbArmes = 3;
+	Armes[] listeArmes = new Armes[nbArmes];
+	
 	LinkedList<Double> flagX = new LinkedList<Double>();
 	LinkedList<Double> flagY = new LinkedList<Double>();
 	
 	public int screenWidth = 1920;
 	public int screenHeight = 1080;
-	public int mapSizeW = 9000;
-	public int mapSizeH = 7000;
+	public int mapSizeW = 3200;
+	public int mapSizeH = 2500;
 
 	public void start(Stage primaryStage) {
 		primaryStage.initStyle(StageStyle.UNDECORATED);
@@ -117,6 +125,45 @@ public class Main extends Application {
 			pan.getChildren().add(poly);
 		}
 		
+		LinkedList<LinkedList<Double>> l_l_triangles = new LinkedList<LinkedList<Double>>();
+		for(int k=0; k<l_obs.size(); k++){
+			poly = l_obs.get(k);
+			int i;
+			LinkedList<Double> l_triangles = new LinkedList<Double>();
+			Polygon poly2 = new Polygon();
+			for (i = 0; i < poly.getPoints().size(); i++) {poly2.getPoints().add(poly.getPoints().get(i));}
+			i=0;
+			double dd = 0;
+			while (poly2.getPoints().size()>=6 & i<40) { //TRIANGULATION
+				double Ax = (double) poly2.getPoints().toArray()[(2 * i) % poly2.getPoints().size()];
+				double Ay = (double) poly2.getPoints().toArray()[(2 * i + 1) % poly2.getPoints().size()];
+				double Bx = (double) poly2.getPoints().toArray()[(2 * i + 2) % poly2.getPoints().size()];
+				double By = (double) poly2.getPoints().toArray()[(2 * i + 3) % poly2.getPoints().size()];
+				double Cx = (double) poly2.getPoints().toArray()[(2 * i + 4) % poly2.getPoints().size()];
+				double Cy = (double) poly2.getPoints().toArray()[(2 * i + 5) % poly2.getPoints().size()];
+				double Dx = Bx - Ax; double Dy = By - Ay;
+				double Tx = Cx - Ax; double Ty = Cy - Ay;
+				double d = Dx * Ty - Dy * Tx;
+				Segment s = new Segment(new Point(Ax,Ay), new Point(Cx,Cy));
+				MyPolygon p = new MyPolygon();
+				for(int n=0; n<poly2.getPoints().toArray().length/2;n++){
+					p.addVertex(((Double)poly2.getPoints().toArray()[2*n]).intValue(),  ((Double)poly2.getPoints().toArray()[2*n+1]).intValue());
+				}
+				if (dd == 0){
+					dd = d;
+				}else{
+					if (d*dd >= 0 & p.IsFullInside(s)) {
+						l_triangles.add(Ax); l_triangles.add(Ay);
+						l_triangles.add(Bx); l_triangles.add(By);
+						l_triangles.add(Cx); l_triangles.add(Cy);
+						poly2.getPoints().remove((2 * i + 2) % poly2.getPoints().size());
+						poly2.getPoints().remove((2 * i + 2) % (poly2.getPoints().size()+1));
+						i--;
+					}i++;
+				}
+			}
+			l_l_triangles.add(l_triangles);
+		}
 
 		for(int i=0; i<l_obs.size(); i++){
 			for(int j=0;j<l_obs.get(i).getPoints().size(); j++){
@@ -146,9 +193,10 @@ public class Main extends Application {
 		pan.getChildren().add(poly);
 
 		j = new Joueur(500, 500, pan);
-		double vitesse = 10;
+		double vitesse = 6;
+		listeArmes[0] = new Gun(0.5, -1, 8, l_l_triangles, l_obs, pan, mapSizeW, mapSizeH);
 		
-		MiniMap miniMap = new MiniMap(screenWidth, screenHeight, mapSizeW, mapSizeH, this, pan, j);
+		MiniMap miniMap = new MiniMap(screenWidth, screenHeight, mapSizeW, mapSizeH, this, l_l_triangles, pan, j);
 		root.getChildren().add(miniMap);
 		
 		AnimationTimer jeu = new AnimationTimer() {
@@ -192,6 +240,11 @@ public class Main extends Application {
 					j.translate(dx, dy);
 					miniMap.updateJoueur(j);
 				}
+				if (tirer){
+					if (!(j.x == mouseX & j.y == mouseY)){
+						listeArmes[choixArme-1].tire(j.x, j.y, mouseX, mouseY);
+					}
+				}
 
 			}
 		};
@@ -218,46 +271,81 @@ public class Main extends Application {
 					miniMap.camX = -pan.x;miniMap.translateCamX(0);
 					miniMap.camY = -pan.y;miniMap.translateCamY(0);
 					break;
+				case "ESCAPE":
+					System.exit(1);
+				}
+				if (g.getCode().toString().startsWith("DIGIT")){
+					int arme = Integer.parseInt(g.getCode().toString().substring(5));
+					if (arme == choixArme & listeArmes[choixArme-1]!=null){
+						tirer = true;
+					}else{
+						if (arme <= nbArmes){
+							choixArme = arme;
+							tirer = false;
+						}
+					}
+					
 				}
 			}
 		});
 
 		scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
 			public void handle(KeyEvent g) {
-				if (g.getCode().toString() == "UP" | g.getCode().toString() == "DOWN") {
-					depCamY = 0;
+				switch(g.getCode().toString()) {
+				case "UP" : case "DOWN" :
+					depCamY = 0; break;
+				case "LEFT" : case "RIGHT" :
+					depCamX = 0; break;
+				case "SPACE" :
+					spaceKey = false; break;
+
 				}
-				if (g.getCode().toString() == "LEFT" | g.getCode().toString() == "RIGHT") {
-					depCamX = 0;
+				if (g.getCode().toString().startsWith("DIGIT")){
+					tirer = false;
 				}
-				if (g.getCode().toString() == "SPACE") spaceKey = false;
 			}
 
 		});
 		
-		scene.setOnMouseMoved(new EventHandler<MouseEvent>() {
+		pan.setOnMouseMoved(new EventHandler<MouseEvent>() {
 			public void handle(MouseEvent m) {
+				mouseX = m.getX(); mouseY = m.getY();
 				depCamX2 = 0;
 				depCamY2 = 0;
-				if (m.getX() < 10) {
+				if (m.getScreenX() < 10) {
 					depCamX2 = -15;
 				}
-				if (m.getX() > 1910) {
+				if (m.getScreenX() > 1910) {
 					depCamX2 = 15;
 				}
-				if (m.getY() < 10) {
+				if (m.getScreenY() < 10) {
 					depCamY2 = -15;
 				}
-				if (m.getY() > 1070) {
+				if (m.getScreenY() > 1070) {
 					depCamY2 = 15;
 				}
 			}
 		});
 		
-		scene.setOnMouseDragged(new EventHandler<MouseEvent>() {
+		pan.setOnMouseDragged(new EventHandler<MouseEvent>() {
 			public void handle(MouseEvent m) {
-				if (clicDroit & m.getX() > 50 & m.getX() < mapSizeW-50 & m.getY() > 50 & m.getY() < mapSizeH-50) {
-					findPath(m.getX()-pan.x, m.getY()-pan.y, pan);
+				mouseX = m.getX(); mouseY = m.getY();
+				if (m.getX() > 50 & m.getX() < mapSizeW-50 & m.getY() > 50 & m.getY() < mapSizeH-50) {
+					findPath(m.getX(), m.getY(), l_l_triangles, pan);
+				}
+				depCamX2 = 0;
+				depCamY2 = 0;
+				if (m.getScreenX() < 10) {
+					depCamX2 = -15;
+				}
+				if (m.getScreenX() > 1910) {
+					depCamX2 = 15;
+				}
+				if (m.getScreenY() < 10) {
+					depCamY2 = -15;
+				}
+				if (m.getScreenY() > 1070) {
+					depCamY2 = 15;
 				}
 			}
 		});
@@ -268,11 +356,10 @@ public class Main extends Application {
 				if (m.getButton().toString() == "PRIMARY") {
 
 				}
-				if (m.getButton().toString() == "SECONDARY" & m.getX() > 50 & m.getX() < mapSizeW-50 & m.getY() > 50
-						& m.getY() < mapSizeH-50) {
+				if (m.getButton().toString() == "SECONDARY" & m.getX() > 50 & m.getX() < mapSizeW-50 & m.getY() > 50 & m.getY() < mapSizeH-50) {
 					clicDroit = true;
 					scene.setCursor(Cursor.NONE);
-					findPath(m.getX(), m.getY(), pan);
+					findPath(m.getX(), m.getY(), l_l_triangles, pan);
 				}
 			}
 		});
@@ -287,16 +374,30 @@ public class Main extends Application {
 				}
 			}
 		});
+		pan.setOnMouseEntered(new EventHandler<MouseEvent>() {
+			public void handle(MouseEvent m) {
+				mouseX = m.getX(); mouseY = m.getY();
+			}
+		});
+		pan.setOnMouseExited(new EventHandler<MouseEvent>() {
+			public void handle(MouseEvent m) {
+				depCamX2 = 0;
+				depCamY2 = 0;
+			}
+		});
 		
 		primaryStage.show();
 		jeu.start();
 	}
 
-	public int findPath(double x, double y, CustomPanel pan) {
-		double tab[] = repositionnePts(x, y, l_obs, pan);
+	
+	
+	
+	public int findPath(double x, double y, LinkedList<LinkedList<Double>> l_l_triangles, CustomPanel pan) {
+		double tab[] = repositionnePts(x, y, l_l_triangles, l_obs, pan);
 		double destX = tab[0];
 		double destY = tab[1];
-		tab = repositionnePts(j.x, j.y, l_obs, pan);
+		tab = repositionnePts(j.x, j.y, l_l_triangles, l_obs, pan);
 		double depX = tab[0];
 		double depY = tab[1];
 		
@@ -306,7 +407,7 @@ public class Main extends Application {
 		graphe.setFin(l_obs, destX, destY);
 		
 		if (graphe.getDebut().size()==0 | graphe.getFin().size()==0 | graphe.getDebut().size()==graphe.getGraphe().size() | graphe.getFin().size()==graphe.getGraphe().size()) return 0;
-		if (distance(destX, destY, j.x, j.y)<2) return 1;
+		if (distance(destX, destY, j.x, j.y)<3) return 1;
 
 		
 		int nb_sommets = graphe.getGraphe().size()+2;
@@ -416,86 +517,8 @@ public class Main extends Application {
 	}
 
 	
-	public Polygon ptsDans(double x, double y, LinkedList<Polygon> l_obs, CustomPanel pan){
-		boolean test;
-		ListIterator<Polygon> li = l_obs.listIterator();
-		Polygon poly=l_obs.getFirst();
-		Polygon res = null;
-		while (res==null & li.hasNext()) {
-			poly = li.next();
-			int i;
-			LinkedList<Double> l_triangles = new LinkedList<Double>();
-			Polygon poly2 = new Polygon();
-			for (i = 0; i < poly.getPoints().size(); i++) {
-				poly2.getPoints().add(poly.getPoints().get(i));
-			}
-			i=0;
-			while (poly2.getPoints().size()>=6 & i<40) { //TRIANGULATION
-				double Ax = (double) poly2.getPoints().toArray()[(2 * i) % poly2.getPoints().size()];
-				double Ay = (double) poly2.getPoints().toArray()[(2 * i + 1) % poly2.getPoints().size()];
-				double Bx = (double) poly2.getPoints().toArray()[(2 * i + 2) % poly2.getPoints().size()];
-				double By = (double) poly2.getPoints().toArray()[(2 * i + 3) % poly2.getPoints().size()];
-				double Cx = (double) poly2.getPoints().toArray()[(2 * i + 4) % poly2.getPoints().size()];
-				double Cy = (double) poly2.getPoints().toArray()[(2 * i + 5) % poly2.getPoints().size()];
-				double Dx = Bx - Ax;
-				double Dy = By - Ay;
-				double Tx = Cx - Ax;
-				double Ty = Cy - Ay;
-				double d = Dx * Ty - Dy * Tx;
-				
-				Segment s = new Segment(new Point(Ax,Ay), new Point(Cx,Cy));
-				MyPolygon p = new MyPolygon();
-				for(int n=0; n<poly2.getPoints().toArray().length/2;n++){
-					p.addVertex(((Double)poly2.getPoints().toArray()[2*n]).intValue(),  ((Double)poly2.getPoints().toArray()[2*n+1]).intValue());
-				}
-				
-				if (d < 0 & p.IsFullInside(s)) {
-					l_triangles.add(Ax);
-					l_triangles.add(Ay);
-					l_triangles.add(Bx);
-					l_triangles.add(By);
-					l_triangles.add(Cx);
-					l_triangles.add(Cy);
-					poly2.getPoints().remove((2 * i + 2) % poly2.getPoints().size());
-					poly2.getPoints().remove((2 * i + 2) % (poly2.getPoints().size()+1));
-					i--;
-				}i++;
-
-			}
-			
-			for (int j = 0; j < l_triangles.size() / 6; j++) {//TEST DE COLLISION
-				LinkedList<Double> tri = new LinkedList<Double>();
-				test = false;
-				int valeur=0;
-				for (i = 6 * j; i < 6 * j + 6; i++)
-					tri.add(l_triangles.get(i));
-				for (i = 0; i < 3; i++) {
-					double Ax = tri.get((2 * i) % 6);
-					double Ay = tri.get((2 * i + 1) % 6);
-					double Bx = tri.get((2 * i + 2) % 6);
-					double By = tri.get((2 * i + 3) % 6);
-					double Dx = Bx - Ax;
-					double Dy = By - Ay;
-					double Tx = x - Ax;
-					double Ty = y - Ay;
-					double d = Dx * Ty - Dy * Tx;
-					if (valeur==0){
-						if (d > 0) valeur = 1;
-						if (d < 0) valeur = -1;
-					}else{
-						if ((d > 0 & valeur==-1) | (d < 0 & valeur==1)) test = true;	
-					}
-				}
-				if (test == false) {
-					res=poly;
-				}
-			}
-		}
-		return res;
-	}
-	
-	public double[] repositionnePts(double x, double y, LinkedList<Polygon> l_obs, CustomPanel pan){
-		Polygon res = ptsDans(x,y,l_obs,pan);
+	public double[] repositionnePts(double x, double y, LinkedList<LinkedList<Double>> l_l_triangles, LinkedList<Polygon> l_obs, CustomPanel pan){
+		Polygon res = new Point(x,y).ptsDans(l_l_triangles, l_obs,pan);
 		if (res==null) return new double[] {x, y};
 		
 		double d = Double.MAX_VALUE;

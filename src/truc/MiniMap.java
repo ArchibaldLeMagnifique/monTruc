@@ -23,10 +23,11 @@ public class MiniMap extends Pane{
 	public double camX=0, camY=0;
 	Circle joueur;
 	LinkedList<Polygon> l_obs;
+	LinkedList<LinkedList<Double>> l_l_triangles;
 	
 	boolean clicGauche = false, clicDroit = false;
 	
-	public MiniMap(int w, int h, int mapSizeW, int mapSizeH, Main main, CustomPanel pan, Joueur joueur) {
+	public MiniMap(int w, int h, int mapSizeW, int mapSizeH, Main main, LinkedList<LinkedList<Double>> l_l_triangles, CustomPanel pan, Joueur joueur) {
 		super();
 		this.screenSizeW = w;
 		this.screenSizeH = h;
@@ -35,8 +36,8 @@ public class MiniMap extends Pane{
 		this.setPrefWidth(350 * dimension);
 		this.setPrefHeight(300 * dimension);
 		this.setStyle("-fx-background-color: #101010; -fx-border-width: 6; -fx-border-color: #5e4526; -fx-border-radius: 5; -fx-background-radius: 5");
-		this.setTranslateX(w-this.getPrefWidth());
-		this.setTranslateY(h-this.getPrefHeight());
+		this.setTranslateX(w-this.getPrefWidth()-5);
+		this.setTranslateY(h-this.getPrefHeight()-5);
 		
 		rekt = new Rectangle();
 		this.coef = Math.min((this.getPrefWidth()-12)/this.mapSizeW, (this.getPrefHeight()-12)/this.mapSizeH);
@@ -99,7 +100,7 @@ public class MiniMap extends Pane{
 					double clicX = (((MouseEvent) m).getX()-rekt.getTranslateX())/coef/dimension;
 					double clicY = (((MouseEvent) m).getY()-rekt.getTranslateY())/coef/dimension;
 					if (clicX > 50 & clicX < mapSizeW-50 & clicY > 50 & clicY < mapSizeH-50)
-						main.findPath(clicX, clicY, pan);
+						main.findPath(clicX, clicY, l_l_triangles, pan);
 				}
 			}
 		});
@@ -127,11 +128,10 @@ public class MiniMap extends Pane{
 					double clicX = (((MouseEvent) m).getX()-rekt.getTranslateX())/coef/dimension;
 					double clicY = (((MouseEvent) m).getY()-rekt.getTranslateY())/coef/dimension;
 					if (clicX > 50 & clicX < mapSizeW-50 & clicY > 50 & clicY < mapSizeH-50)
-						main.findPath(clicX, clicY, pan);
+						main.findPath(clicX, clicY, l_l_triangles, pan);
 				}
 			}
 		});
-		
 	}
 
 	
