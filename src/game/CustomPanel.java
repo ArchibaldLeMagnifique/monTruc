@@ -1,4 +1,4 @@
-package truc;
+package game;
 
 import javafx.scene.layout.Pane;
 

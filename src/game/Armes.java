@@ -1,4 +1,4 @@
-package truc;
+package game;
 
 import java.util.LinkedList;
 
@@ -30,7 +30,7 @@ class Gun extends Armes{
 		this.l_obs = l_obs;
 		this.pan = pan;
 		this.l_tri = l_tri;
-		this.cd = 0; 
+		this.cd = 0;
 	}
 	
 	public void tire(double depX, double depY, double finX, double finY){

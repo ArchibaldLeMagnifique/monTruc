@@ -1,4 +1,4 @@
-package truc;
+package game;
 
 import javafx.animation.AnimationTimer;
 import javafx.scene.paint.Color;

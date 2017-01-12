@@ -1,4 +1,4 @@
-package truc;
+package game;
 
 import java.util.LinkedList;
 

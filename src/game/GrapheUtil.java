@@ -1,4 +1,4 @@
-package truc;
+package game;
 
 /*****************************************************************************
 /* File Name    : implement some geomatic classes

@@ -1,10 +1,7 @@
-package truc;
+package game;
 
 import java.util.LinkedList;
-import java.util.ListIterator;
-
 import javafx.animation.AnimationTimer;
-import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
@@ -13,18 +10,12 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
+import menu.Main;
 
-public class Main extends Application {
-
-	public static void main(String[] args) {
-		launch(args);
-	}
+public class Game {
 
 	LinkedList<Polygon> l_obs = new LinkedList<Polygon>();
 	LinkedList<Double> l_pts = new LinkedList<Double>();
@@ -49,25 +40,32 @@ public class Main extends Application {
 	public int screenHeight = 1080;
 	public int mapSizeW = 3200;
 	public int mapSizeH = 2500;
+	Main monPapa;
 
+	public Game(int W, int H, Stage primaryStage, Main main){
+		this.screenWidth = W;
+		this.screenHeight = H;
+		this.monPapa = main;
+		this.start(primaryStage);
+	}
+	
+	public void retourMenu(Stage primaryStage) {monPapa.createScene(primaryStage); }
+	
+	
 	public void start(Stage primaryStage) {
-		primaryStage.initStyle(StageStyle.UNDECORATED);
-
-		Group root = new Group();
-		Scene scene = new Scene(root, screenWidth, screenHeight);
-		scene.getStylesheets().add("GameStage.css");
+		Group rootGame = new Group();
+		Scene sceneGame = new Scene(rootGame, screenWidth, screenHeight);
+		sceneGame.getStylesheets().add("GameStage.css");
 		
 		Image curseur = new Image("normal.png");
-		scene.setCursor(new ImageCursor(curseur));
+		sceneGame.setCursor(new ImageCursor(curseur));
 		
-		primaryStage.setScene(scene);
-		primaryStage.setY(0);
-		primaryStage.setX(0);
+		primaryStage.setScene(sceneGame);
 
 		CustomPanel pan = new CustomPanel(mapSizeW, mapSizeH);
 		pan.setPrefWidth(screenWidth);
 		pan.setPrefHeight(screenHeight);
-		root.getChildren().add(pan);
+		rootGame.getChildren().add(pan);
 		
 		Rectangle leFont = new Rectangle();
 		leFont.setWidth(mapSizeW);
@@ -197,7 +195,7 @@ public class Main extends Application {
 		listeArmes[0] = new Gun(0.5, -1, 8, l_l_triangles, l_obs, pan, mapSizeW, mapSizeH);
 		
 		MiniMap miniMap = new MiniMap(screenWidth, screenHeight, mapSizeW, mapSizeH, this, l_l_triangles, pan, j);
-		root.getChildren().add(miniMap);
+		rootGame.getChildren().add(miniMap);
 		
 		AnimationTimer jeu = new AnimationTimer() {
 			public void handle(long currentNanoTime) {
@@ -249,7 +247,7 @@ public class Main extends Application {
 			}
 		};
 
-		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+		sceneGame.setOnKeyPressed(new EventHandler<KeyEvent>() {
 			public void handle(KeyEvent g) {
 				switch(g.getCode().toString()) {
 				case "UP":
@@ -272,7 +270,8 @@ public class Main extends Application {
 					miniMap.camY = -pan.y;miniMap.translateCamY(0);
 					break;
 				case "ESCAPE":
-					System.exit(1);
+					//System.exit(1);
+					retourMenu(primaryStage);
 				}
 				if (g.getCode().toString().startsWith("DIGIT")){
 					int arme = Integer.parseInt(g.getCode().toString().substring(5));
@@ -289,7 +288,7 @@ public class Main extends Application {
 			}
 		});
 
-		scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
+		sceneGame.setOnKeyReleased(new EventHandler<KeyEvent>() {
 			public void handle(KeyEvent g) {
 				switch(g.getCode().toString()) {
 				case "UP" : case "DOWN" :
@@ -358,7 +357,7 @@ public class Main extends Application {
 				}
 				if (m.getButton().toString() == "SECONDARY" & m.getX() > 50 & m.getX() < mapSizeW-50 & m.getY() > 50 & m.getY() < mapSizeH-50) {
 					clicDroit = true;
-					scene.setCursor(Cursor.NONE);
+					sceneGame.setCursor(Cursor.NONE);
 					findPath(m.getX(), m.getY(), l_l_triangles, pan);
 				}
 			}
@@ -370,7 +369,7 @@ public class Main extends Application {
 				}
 				if (m.getButton().toString() == "SECONDARY") {
 					clicDroit = false;
-					scene.setCursor(new ImageCursor(curseur));
+					sceneGame.setCursor(new ImageCursor(curseur));
 				}
 			}
 		});

@@ -1,4 +1,4 @@
-package truc;
+package game;
 
 import java.util.LinkedList;
 
@@ -27,7 +27,7 @@ public class MiniMap extends Pane{
 	
 	boolean clicGauche = false, clicDroit = false;
 	
-	public MiniMap(int w, int h, int mapSizeW, int mapSizeH, Main main, LinkedList<LinkedList<Double>> l_l_triangles, CustomPanel pan, Joueur joueur) {
+	public MiniMap(int w, int h, int mapSizeW, int mapSizeH, Game main, LinkedList<LinkedList<Double>> l_l_triangles, CustomPanel pan, Joueur joueur) {
 		super();
 		this.screenSizeW = w;
 		this.screenSizeH = h;
