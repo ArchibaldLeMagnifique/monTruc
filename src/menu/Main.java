@@ -31,6 +31,7 @@ public class Main extends Application{
 			secFont = Font.loadFont(Main.class.getResource("/GUNPLAY.TTF").toExternalForm(), 70);
 		}catch (Exception e) {System.out.println("error : Can't load font."); }
 		createScene(primaryStage);
+		game = new Game(screenWidth, screenHeight, primaryStage, me);
 	}
 	
 	public void createScene(Stage primaryStage){

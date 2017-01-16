@@ -41,6 +41,9 @@ public class Game {
 	public int mapSizeW = 3200;
 	public int mapSizeH = 2500;
 	Main monPapa;
+	CustomPanel pan;
+	LinkedList<LinkedList<Double>> l_l_triangles;
+	LinkedList<Ennemis> l_ennemis = new LinkedList<Ennemis>();;
 
 	public Game(int W, int H, Stage primaryStage, Main main){
 		this.screenWidth = W;
@@ -62,7 +65,7 @@ public class Game {
 		
 		primaryStage.setScene(sceneGame);
 
-		CustomPanel pan = new CustomPanel(mapSizeW, mapSizeH);
+		pan = new CustomPanel(mapSizeW, mapSizeH);
 		pan.setPrefWidth(screenWidth);
 		pan.setPrefHeight(screenHeight);
 		rootGame.getChildren().add(pan);
@@ -123,7 +126,8 @@ public class Game {
 			pan.getChildren().add(poly);
 		}
 		
-		LinkedList<LinkedList<Double>> l_l_triangles = new LinkedList<LinkedList<Double>>();
+		//---   TRIANGULATION   ---
+		l_l_triangles = new LinkedList<LinkedList<Double>>();
 		for(int k=0; k<l_obs.size(); k++){
 			poly = l_obs.get(k);
 			int i;
@@ -132,7 +136,7 @@ public class Game {
 			for (i = 0; i < poly.getPoints().size(); i++) {poly2.getPoints().add(poly.getPoints().get(i));}
 			i=0;
 			double dd = 0;
-			while (poly2.getPoints().size()>=6 & i<40) { //TRIANGULATION
+			while (poly2.getPoints().size()>=6 & i<40) {
 				double Ax = (double) poly2.getPoints().toArray()[(2 * i) % poly2.getPoints().size()];
 				double Ay = (double) poly2.getPoints().toArray()[(2 * i + 1) % poly2.getPoints().size()];
 				double Bx = (double) poly2.getPoints().toArray()[(2 * i + 2) % poly2.getPoints().size()];
@@ -169,10 +173,10 @@ public class Game {
 			}
 		}
 		
-		// --- Creation du graphe ---
+		// ---   Creation du graphe   ---
 		graphe = new Graphe(l_obs, pan);
 		
-		// --- Bords ---
+		// ---   Bords   ---
 		poly = new Polygon();
 		poly.getPoints().addAll(new Double[] { 0.0, 0.0, 0.0, 50.0, (double)mapSizeW, 50.0, (double)mapSizeW, 0.0 });
 		poly.getStyleClass().add("obstacle1");
@@ -190,12 +194,29 @@ public class Game {
 		poly.getStyleClass().add("obstacle1");
 		pan.getChildren().add(poly);
 
-		j = new Joueur(500, 500, pan);
-		double vitesse = 6;
-		listeArmes[0] = new Gun(0.5, -1, 8, l_l_triangles, l_obs, pan, mapSizeW, mapSizeH);
+		j = new Joueur(mapSizeW/2, mapSizeH/2, pan);
+		double vitesse = 4;
+		
+		new EnnemiPassif(mapSizeW/2, mapSizeH/2+400,this);
+		new EnnemiPassif(mapSizeW/2+500, mapSizeH/2,this);
+		new EnnemiPassif(mapSizeW/2-500, mapSizeH/2,this);
+		new EnnemiPassif(mapSizeW/2, mapSizeH/2-400,this);
 		
 		MiniMap miniMap = new MiniMap(screenWidth, screenHeight, mapSizeW, mapSizeH, this, l_l_triangles, pan, j);
 		rootGame.getChildren().add(miniMap);
+		
+		pan.translateX(mapSizeW/2-screenWidth/2);
+		pan.translateY(mapSizeH/2-screenHeight/2+40);
+		miniMap.translateCamX(mapSizeW/2-screenWidth/2);
+		miniMap.translateCamY(mapSizeH/2-screenHeight/2+40);
+		
+		WeaponBar weaponBar = new WeaponBar(screenWidth, screenHeight, 3);
+		listeArmes[0] = new Gun(0.5, -1, 8, 1, this);
+		weaponBar.switchWeapon(listeArmes[0], 0);
+		listeArmes[1] = new MiniGun(0.05, -1, 8, 1, this);
+		weaponBar.switchWeapon(listeArmes[1], 1);
+		
+		rootGame.getChildren().add(weaponBar);
 		
 		AnimationTimer jeu = new AnimationTimer() {
 			public void handle(long currentNanoTime) {
@@ -233,6 +254,7 @@ public class Game {
 						flagY.removeFirst();
 					}
 					double mod = Math.max((double) Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)) , 10);
+					if (tirer) mod/=listeArmes[choixArme-1].reductionVitesse;
 					dx = dx / mod * vitesse;
 					dy = dy / mod * vitesse;
 					j.translate(dx, dy);
@@ -270,7 +292,7 @@ public class Game {
 					miniMap.camY = -pan.y;miniMap.translateCamY(0);
 					break;
 				case "ESCAPE":
-					//System.exit(1);
+					System.exit(1);
 					retourMenu(primaryStage);
 				}
 				if (g.getCode().toString().startsWith("DIGIT")){
@@ -281,6 +303,8 @@ public class Game {
 						if (arme <= nbArmes){
 							choixArme = arme;
 							tirer = false;
+							weaponBar.selection = choixArme;
+							weaponBar.start();
 						}
 					}
 					
