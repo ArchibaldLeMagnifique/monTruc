@@ -1,5 +1,6 @@
 package game;
 
+import java.io.File;
 import java.util.LinkedList;
 import javafx.animation.AnimationTimer;
 import javafx.event.EventHandler;
@@ -60,7 +61,7 @@ public class Game {
 		Scene sceneGame = new Scene(rootGame, screenWidth, screenHeight);
 		sceneGame.getStylesheets().add("GameStage.css");
 		
-		Image curseur = new Image("normal.png");
+		Image curseur = new Image("file:/" + (new File("").getAbsolutePath().toString()).replaceAll("\\\\", "/") + "/assets/normal.png");
 		sceneGame.setCursor(new ImageCursor(curseur));
 		
 		primaryStage.setScene(sceneGame);

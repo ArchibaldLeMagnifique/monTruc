@@ -1,5 +1,7 @@
 package menu;
 
+import java.io.File;
+
 import game.Game;
 import javafx.application.Application;
 import javafx.event.EventHandler;
@@ -27,8 +29,8 @@ public class Main extends Application{
 		primaryStage.initStyle(StageStyle.UNDECORATED);
 		primaryStage.show();
 		try{
-			mainFont = Font.loadFont(Main.class.getResource("/HACKED.TTF").toExternalForm(), 220);
-			secFont = Font.loadFont(Main.class.getResource("/GUNPLAY.TTF").toExternalForm(), 70);
+			mainFont = Font.loadFont("file:/" + (new File("").getAbsolutePath().toString()).replaceAll("\\\\", "/") + "/assets/HACKED.ttf", 220);
+			secFont = Font.loadFont("file:/" + (new File("").getAbsolutePath().toString()).replaceAll("\\\\", "/") + "/assets/GUNPLAY.ttf", 70);
 		}catch (Exception e) {System.out.println("error : Can't load font."); }
 		createScene(primaryStage);
 		game = new Game(screenWidth, screenHeight, primaryStage, me);

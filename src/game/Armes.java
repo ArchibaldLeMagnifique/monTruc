@@ -1,5 +1,7 @@
 package game;
 
+import java.io.File;
+
 import javafx.animation.AnimationTimer;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -28,7 +30,7 @@ class Gun extends Armes{
 		this.degats = degats;
 		this.cdArme = cdArme;
 		this.cd = 0;
-		this.img = new Image("Gun.png");
+		this.img = new Image("file:/" + (new File("").getAbsolutePath().toString()).replaceAll("\\\\", "/") + "/assets/gun.png");
 		this.imgView = new ImageView(img);
 		this.reductionVitesse = 0.8;
 	}
@@ -64,7 +66,7 @@ class MiniGun extends Armes{
 		this.degats = degats;
 		this.cdArme = cdArme;
 		this.cd = 0;
-		this.img = new Image("MiniGun.png");
+		this.img = new Image("file:/" + (new File("").getAbsolutePath().toString()).replaceAll("\\\\", "/") + "/assets/miniGun.png");
 		this.imgView = new ImageView(img);
 		this.reductionVitesse = 0.3;
 	}
