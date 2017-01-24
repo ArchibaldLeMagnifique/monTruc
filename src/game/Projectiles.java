@@ -50,6 +50,7 @@ class Bullet {
 				}
 			}
 		};
+		game.aPauser.add(jeu);
 		jeu.start();
 	}
 

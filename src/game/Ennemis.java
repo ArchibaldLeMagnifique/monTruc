@@ -42,6 +42,7 @@ public class Ennemis {
 		vie -= damages;
 		rektVie.setWidth(size*2.2 * vie/vieTotale);
 		if (vie <= 0){
+			game.l_ennemis.remove((Ennemis)this);
 			game.pan.getChildren().remove(cercle);
 			game.pan.getChildren().remove(rektVie);
 			game.pan.getChildren().remove(fontVie);

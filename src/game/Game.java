@@ -1,6 +1,7 @@
 package game;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import javafx.animation.AnimationTimer;
 import javafx.event.EventHandler;
@@ -15,9 +16,12 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import menu.Main;
+import pause.Pause;
 
 public class Game {
 
+	Stage primaryStage;
+	Scene sceneGame;
 	LinkedList<Polygon> l_obs = new LinkedList<Polygon>();
 	LinkedList<Double> l_pts = new LinkedList<Double>();
 
@@ -37,16 +41,18 @@ public class Game {
 	LinkedList<Double> flagX = new LinkedList<Double>();
 	LinkedList<Double> flagY = new LinkedList<Double>();
 	
-	public int screenWidth = 1920;
-	public int screenHeight = 1080;
+	public int screenWidth, screenHeight;
 	public int mapSizeW = 3200;
 	public int mapSizeH = 2500;
 	Main monPapa;
 	CustomPanel pan;
 	LinkedList<LinkedList<Double>> l_l_triangles;
-	LinkedList<Ennemis> l_ennemis = new LinkedList<Ennemis>();;
+	LinkedList<Ennemis> l_ennemis = new LinkedList<Ennemis>();
+	public ArrayList<AnimationTimer> aPauser;
+	AnimationTimer jeu;
 
 	public Game(int W, int H, Stage primaryStage, Main main){
+		this.aPauser = new ArrayList<AnimationTimer> ();
 		this.screenWidth = W;
 		this.screenHeight = H;
 		this.monPapa = main;
@@ -55,15 +61,33 @@ public class Game {
 	
 	public void retourMenu(Stage primaryStage) {monPapa.createScene(primaryStage); }
 	
+	public void pauseMenu(Stage primaryStage) {
+		for(int i=0; i<aPauser.size(); i++){
+			aPauser.get(i).stop();
+		}
+		clicDroit = false;
+		spaceKey = false;
+		tirer = false;
+		new Pause(screenWidth, screenHeight, primaryStage, this); 
+	}
+	
+	public void unPause(){
+		for(int i=0; i<aPauser.size(); i++){
+			aPauser.get(i).start();
+		}
+		primaryStage.setScene(sceneGame);
+	}
+	
 	
 	public void start(Stage primaryStage) {
+		this.primaryStage = primaryStage;
 		Group rootGame = new Group();
-		Scene sceneGame = new Scene(rootGame, screenWidth, screenHeight);
+		sceneGame = new Scene(rootGame, screenWidth, screenHeight);
 		sceneGame.getStylesheets().add("GameStage.css");
 		
 		Image curseur = new Image("file:/" + (new File("").getAbsolutePath().toString()).replaceAll("\\\\", "/") + "/assets/normal.png");
 		sceneGame.setCursor(new ImageCursor(curseur));
-		
+
 		primaryStage.setScene(sceneGame);
 
 		pan = new CustomPanel(mapSizeW, mapSizeH);
@@ -219,7 +243,7 @@ public class Game {
 		
 		rootGame.getChildren().add(weaponBar);
 		
-		AnimationTimer jeu = new AnimationTimer() {
+		jeu = new AnimationTimer() {
 			public void handle(long currentNanoTime) {
 				if (depCamX != 0 | depCamX2 != 0) {
 					if (depCamX2 == 0) {
@@ -268,7 +292,7 @@ public class Game {
 				}
 
 			}
-		};
+		}; aPauser.add(jeu);
 
 		sceneGame.setOnKeyPressed(new EventHandler<KeyEvent>() {
 			public void handle(KeyEvent g) {
@@ -293,8 +317,7 @@ public class Game {
 					miniMap.camY = -pan.y;miniMap.translateCamY(0);
 					break;
 				case "ESCAPE":
-					System.exit(1);
-					retourMenu(primaryStage);
+					pauseMenu(primaryStage);
 				}
 				if (g.getCode().toString().startsWith("DIGIT")){
 					int arme = Integer.parseInt(g.getCode().toString().substring(5));

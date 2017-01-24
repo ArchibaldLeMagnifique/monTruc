@@ -6,7 +6,9 @@ import game.Game;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
+import javafx.scene.ImageCursor;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -40,6 +42,8 @@ public class Main extends Application{
 		Group root = new Group();
 		sceneMenu = new Scene(root, screenWidth, screenHeight);
 		
+		Image curseur = new Image("file:/" + (new File("").getAbsolutePath().toString()).replaceAll("\\\\", "/") + "/assets/normal.png");
+		sceneMenu.setCursor(new ImageCursor(curseur));
 		primaryStage.setScene(sceneMenu);
 		primaryStage.setY(0); primaryStage.setX(0);
 		
@@ -112,6 +116,12 @@ public class Main extends Application{
 				game = new Game(screenWidth, screenHeight, primaryStage, me);
 			}
 		});
+		bNewGame.setOnMouseReleased(new EventHandler<MouseEvent>() {
+			public void handle(MouseEvent m) {
+				bNewGame.setScaleX(1.1);
+				bNewGame.setScaleY(1.1);
+			}
+		});
 		bPane.getChildren().add(bNewGame);
 		
 
@@ -159,7 +169,12 @@ public class Main extends Application{
 		bExit.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			public void handle(MouseEvent m) {System.exit(0); }
 		});
-
+		bExit.setOnMouseReleased(new EventHandler<MouseEvent>() {
+			public void handle(MouseEvent m) {
+				bExit.setScaleX(1.1);
+				bExit.setScaleY(1.1);
+			}
+		});
 		bPane.getChildren().add(bExit);
 	}
 
