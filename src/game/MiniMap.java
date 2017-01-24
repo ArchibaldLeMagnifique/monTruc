@@ -27,7 +27,7 @@ public class MiniMap extends Pane{
 	
 	boolean clicGauche = false, clicDroit = false;
 	
-	public MiniMap(int w, int h, int mapSizeW, int mapSizeH, Game main, LinkedList<LinkedList<Double>> l_l_triangles, CustomPanel pan, Joueur joueur) {
+	public MiniMap(int w, int h, int mapSizeW, int mapSizeH, Game game, LinkedList<LinkedList<Double>> l_l_triangles, CustomPanel pan, Joueur joueur) {
 		super();
 		this.screenSizeW = w;
 		this.screenSizeH = h;
@@ -100,7 +100,7 @@ public class MiniMap extends Pane{
 					double clicX = (((MouseEvent) m).getX()-rekt.getTranslateX())/coef/dimension;
 					double clicY = (((MouseEvent) m).getY()-rekt.getTranslateY())/coef/dimension;
 					if (clicX > 50 & clicX < mapSizeW-50 & clicY > 50 & clicY < mapSizeH-50)
-						main.findPath(clicX, clicY, l_l_triangles, pan);
+						game.findPath(game.j.x,game.j.y, clicX, clicY, l_l_triangles, pan, game);
 				}
 			}
 		});
@@ -128,7 +128,7 @@ public class MiniMap extends Pane{
 					double clicX = (((MouseEvent) m).getX()-rekt.getTranslateX())/coef/dimension;
 					double clicY = (((MouseEvent) m).getY()-rekt.getTranslateY())/coef/dimension;
 					if (clicX > 50 & clicX < mapSizeW-50 & clicY > 50 & clicY < mapSizeH-50)
-						main.findPath(clicX, clicY, l_l_triangles, pan);
+						game.findPath(game.j.x,game.j.y, clicX, clicY, l_l_triangles, pan, game);
 				}
 			}
 		});

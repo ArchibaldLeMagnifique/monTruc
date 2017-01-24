@@ -17,6 +17,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import menu.Main;
 import pause.Pause;
+import tyrandules.*;
 
 public class Game {
 
@@ -28,7 +29,7 @@ public class Game {
 	double depCamX, depCamY, depCamX2, depCamY2;
 	
 	Graphe graphe;
-	Joueur j;
+	public Joueur j;
 	boolean clicDroit = false;
 	boolean spaceKey = false;
 	double mouseX, mouseY;
@@ -44,12 +45,13 @@ public class Game {
 	public int screenWidth, screenHeight;
 	public int mapSizeW = 3200;
 	public int mapSizeH = 2500;
-	Main monPapa;
-	CustomPanel pan;
-	LinkedList<LinkedList<Double>> l_l_triangles;
-	LinkedList<Ennemis> l_ennemis = new LinkedList<Ennemis>();
+	Main monPapa; Game me;
+	public CustomPanel pan;
+	public LinkedList<LinkedList<Double>> l_l_triangles;
+	public LinkedList<Ennemis> l_ennemis = new LinkedList<Ennemis>();
 	public ArrayList<AnimationTimer> aPauser;
 	AnimationTimer jeu;
+	UI ui;
 
 	public Game(int W, int H, Stage primaryStage, Main main){
 		this.aPauser = new ArrayList<AnimationTimer> ();
@@ -57,6 +59,7 @@ public class Game {
 		this.screenHeight = H;
 		this.monPapa = main;
 		this.start(primaryStage);
+		this.me = this;
 	}
 	
 	public void retourMenu(Stage primaryStage) {monPapa.createScene(primaryStage); }
@@ -222,52 +225,44 @@ public class Game {
 		j = new Joueur(mapSizeW/2, mapSizeH/2, pan);
 		double vitesse = 4;
 		
-		new EnnemiPassif(mapSizeW/2, mapSizeH/2+400,this);
-		new EnnemiPassif(mapSizeW/2+500, mapSizeH/2,this);
-		new EnnemiPassif(mapSizeW/2-500, mapSizeH/2,this);
-		new EnnemiPassif(mapSizeW/2, mapSizeH/2-400,this);
+		new Suiveur(mapSizeW/2, mapSizeH/2+400,this,2);
+		new Suiveur(mapSizeW/2+500, mapSizeH/2,this,2);
+		new Suiveur(mapSizeW/2-500, mapSizeH/2,this,2);
+		new Suiveur(mapSizeW/2, mapSizeH/2-400,this,2);
 		
-		MiniMap miniMap = new MiniMap(screenWidth, screenHeight, mapSizeW, mapSizeH, this, l_l_triangles, pan, j);
-		rootGame.getChildren().add(miniMap);
 		
+
 		pan.translateX(mapSizeW/2-screenWidth/2);
 		pan.translateY(mapSizeH/2-screenHeight/2+40);
-		miniMap.translateCamX(mapSizeW/2-screenWidth/2);
-		miniMap.translateCamY(mapSizeH/2-screenHeight/2+40);
 		
-		WeaponBar weaponBar = new WeaponBar(screenWidth, screenHeight, 3);
-		listeArmes[0] = new Gun(0.5, -1, 8, 1, this);
-		weaponBar.switchWeapon(listeArmes[0], 0);
-		listeArmes[1] = new MiniGun(0.05, -1, 8, 1, this);
-		weaponBar.switchWeapon(listeArmes[1], 1);
+		ui = new UI(rootGame, this);
 		
-		rootGame.getChildren().add(weaponBar);
 		
 		jeu = new AnimationTimer() {
 			public void handle(long currentNanoTime) {
 				if (depCamX != 0 | depCamX2 != 0) {
 					if (depCamX2 == 0) {
 						pan.translateX(depCamX);
-						miniMap.translateCamX(depCamX);
+						ui.miniMap.translateCamX(depCamX);
 					} else {
 						pan.translateX(depCamX2);
-						miniMap.translateCamX(depCamX2);
+						ui.miniMap.translateCamX(depCamX2);
 					}
 				}
 				if (depCamY != 0 | depCamY2 != 0) {
 					if (depCamY2 == 0) {
 						pan.translateY(depCamY);
-						miniMap.translateCamY(depCamY);
+						ui.miniMap.translateCamY(depCamY);
 					} else {
 						pan.translateY(depCamY2);
-						miniMap.translateCamY(depCamY2);
+						ui.miniMap.translateCamY(depCamY2);
 					}
 				}
 				if (spaceKey){
 					pan.x = -j.x + screenWidth/2;pan.translateX(0);
 					pan.y = -j.y + screenHeight/2;pan.translateY(0);
-					miniMap.camX = -pan.x;miniMap.translateCamX(0);
-					miniMap.camY = -pan.y;miniMap.translateCamY(0);
+					ui.miniMap.camX = -pan.x; ui.miniMap.translateCamX(0);
+					ui.miniMap.camY = -pan.y; ui.miniMap.translateCamY(0);
 				}
 				if (flagX.size() != 0 & flagY.size() != 0) {
 					double dx = flagX.get(0) - j.getX();
@@ -283,7 +278,7 @@ public class Game {
 					dx = dx / mod * vitesse;
 					dy = dy / mod * vitesse;
 					j.translate(dx, dy);
-					miniMap.updateJoueur(j);
+					ui.miniMap.updateJoueur(j);
 				}
 				if (tirer){
 					if (!(j.x == mouseX & j.y == mouseY)){
@@ -313,8 +308,8 @@ public class Game {
 					spaceKey = true;
 					pan.x = -j.x + screenWidth/2;pan.translateX(0);
 					pan.y = -j.y + screenHeight/2;pan.translateY(0);
-					miniMap.camX = -pan.x;miniMap.translateCamX(0);
-					miniMap.camY = -pan.y;miniMap.translateCamY(0);
+					ui.miniMap.camX = -pan.x; ui.miniMap.translateCamX(0);
+					ui.miniMap.camY = -pan.y; ui.miniMap.translateCamY(0);
 					break;
 				case "ESCAPE":
 					pauseMenu(primaryStage);
@@ -327,8 +322,8 @@ public class Game {
 						if (arme <= nbArmes){
 							choixArme = arme;
 							tirer = false;
-							weaponBar.selection = choixArme;
-							weaponBar.start();
+							ui.weaponBar.selection = choixArme;
+							ui.weaponBar.start();
 						}
 					}
 					
@@ -356,7 +351,7 @@ public class Game {
 		
 		pan.setOnMouseMoved(new EventHandler<MouseEvent>() {
 			public void handle(MouseEvent m) {
-				mouseX = m.getX(); mouseY = m.getY();
+				mouseX = m.getScreenX()-pan.x; mouseY = m.getScreenY()-pan.y;
 				depCamX2 = 0;
 				depCamY2 = 0;
 				if (m.getScreenX() < 10) {
@@ -376,9 +371,9 @@ public class Game {
 		
 		pan.setOnMouseDragged(new EventHandler<MouseEvent>() {
 			public void handle(MouseEvent m) {
-				mouseX = m.getX(); mouseY = m.getY();
-				if (m.getX() > 50 & m.getX() < mapSizeW-50 & m.getY() > 50 & m.getY() < mapSizeH-50) {
-					findPath(m.getX(), m.getY(), l_l_triangles, pan);
+				mouseX = m.getScreenX()-pan.x; mouseY = m.getScreenY()-pan.y;
+				if (m.getX() > 50 & m.getX() < mapSizeW-50 & m.getY() > 50 & m.getY() < mapSizeH-50 & m.getButton().toString()=="SECONDARY") {
+					findPath(j.x,j.y, m.getX(), m.getY(), l_l_triangles, pan, me);
 				}
 				depCamX2 = 0;
 				depCamY2 = 0;
@@ -406,7 +401,7 @@ public class Game {
 				if (m.getButton().toString() == "SECONDARY" & m.getX() > 50 & m.getX() < mapSizeW-50 & m.getY() > 50 & m.getY() < mapSizeH-50) {
 					clicDroit = true;
 					sceneGame.setCursor(Cursor.NONE);
-					findPath(m.getX(), m.getY(), l_l_triangles, pan);
+					findPath(j.x,j.y, m.getX(), m.getY(), l_l_triangles, pan, me);
 				}
 			}
 		});
@@ -421,17 +416,6 @@ public class Game {
 				}
 			}
 		});
-		pan.setOnMouseEntered(new EventHandler<MouseEvent>() {
-			public void handle(MouseEvent m) {
-				mouseX = m.getX(); mouseY = m.getY();
-			}
-		});
-		pan.setOnMouseExited(new EventHandler<MouseEvent>() {
-			public void handle(MouseEvent m) {
-				depCamX2 = 0;
-				depCamY2 = 0;
-			}
-		});
 		
 		primaryStage.show();
 		jeu.start();
@@ -439,22 +423,20 @@ public class Game {
 
 	
 	
-	
-	public int findPath(double x, double y, LinkedList<LinkedList<Double>> l_l_triangles, CustomPanel pan) {
+	public int findPath(double debX, double debY, double x, double y, LinkedList<LinkedList<Double>> l_l_triangles, CustomPanel pan, Object obj) {
 		double tab[] = repositionnePts(x, y, l_l_triangles, l_obs, pan);
 		double destX = tab[0];
 		double destY = tab[1];
-		tab = repositionnePts(j.x, j.y, l_l_triangles, l_obs, pan);
+		tab = repositionnePts(debX, debY, l_l_triangles, l_obs, pan);
 		double depX = tab[0];
 		double depY = tab[1];
-		
-		new curseurFx(destX,destY,8,pan).start();
+		if (obj.getClass().toString().equals("class game.Game"))
+			new curseurFx(destX,destY,8,pan).start();
 		
 		graphe.setDebut(l_obs, depX, depY);
 		graphe.setFin(l_obs, destX, destY);
 		
 		if (graphe.getDebut().size()==0 | graphe.getFin().size()==0 | graphe.getDebut().size()==graphe.getGraphe().size() | graphe.getFin().size()==graphe.getGraphe().size()) return 0;
-		if (distance(destX, destY, j.x, j.y)<3) return 1;
 
 		
 		int nb_sommets = graphe.getGraphe().size()+2;
@@ -497,15 +479,6 @@ public class Game {
 			graphe_complet.get(nb_sommets-1).addFirst(new cell(0, distance(depX, depY, destX, destY)));
 		}
 
-		/*
-		for(int i=0; i<graphe_complet.size(); i++){
-			System.out.print(i+" : ");
-			for(int j=0; j<graphe_complet.get(i).size(); j++){
-				System.out.println("\t"+graphe_complet.get(i).get(j).getPoint()+" "+graphe_complet.get(i).get(j).getDistance());
-			}System.out.println();
-		}*/
-		
-		
 		//---   Dijkstra   ---
 		int s1;
 		while (sommets.isEmpty()==false){
@@ -521,20 +494,41 @@ public class Game {
 		
 		//-- maj des drapeaux   ---
 		synchronized(this){
-			flagX = new LinkedList<Double>();
-			flagY = new LinkedList<Double>();
-			int s = nb_sommets-1;
-			while(s!=0){
-				if (s!=nb_sommets-1){
-					flagX.addFirst(l_pts.get(2*(s-1)));
-					flagY.addFirst(l_pts.get(2*(s-1)+1));
+			int s;
+			switch (obj.getClass().toString()){
+			case "class game.Game":
+				((Game) obj).flagX = new LinkedList<Double>();
+				((Game) obj).flagY = new LinkedList<Double>();
+				s = nb_sommets-1;
+				while(s!=0){
+					if (s!=nb_sommets-1){
+						((Game) obj).flagX.addFirst(l_pts.get(2*(s-1)));
+						((Game) obj).flagY.addFirst(l_pts.get(2*(s-1)+1));
+					}
+					s=predecesseur[s];
 				}
-				s=predecesseur[s];
+				((Game) obj).flagX.addLast(destX);
+				((Game) obj).flagY.addLast(destY);
+				break;
+			case "class tyrandules.Suiveur":
+				((tyrandules.Ennemis) obj).flagX = new LinkedList<Double>();
+				((tyrandules.Ennemis) obj).flagY = new LinkedList<Double>();
+				s = nb_sommets-1;
+				while(s!=0){
+					if (s!=nb_sommets-1){
+						((tyrandules.Ennemis) obj).flagX.addFirst(l_pts.get(2*(s-1)));
+						((tyrandules.Ennemis) obj).flagY.addFirst(l_pts.get(2*(s-1)+1));
+					}
+					s=predecesseur[s];
+				}
+				((tyrandules.Ennemis) obj).flagX.addLast(destX);
+				((tyrandules.Ennemis) obj).flagY.addLast(destY);
+				break;
+			default:
+				return 2;
 			}
-			flagX.addLast(destX);
-			flagY.addLast(destY);
 		}
-		
+
 		//---   retour a letat initial   ---
 		if (coupe==false){
 			graphe_complet.get(nb_sommets-1).removeFirstOccurrence(new cell(0, distance(depX, depY, destX, destY)));
@@ -548,7 +542,7 @@ public class Game {
 			graphe_complet.get(graphe_complet.getFirst().get(i).getPoint()).removeFirst();
 		}
 
-		return 1;
+		return 0;
 	}
 	
 	private int trouveMin(LinkedList<Integer> sommets, double[] d){//un truc de Dijkstra

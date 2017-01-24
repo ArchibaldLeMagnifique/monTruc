@@ -18,8 +18,8 @@ class curseurFx{
 		this.pan.getChildren().add(this.cercle);
 	}
 	
-	public void start() {
-		AnimationTimer jeu = new AnimationTimer() {
+	public void start () {
+		AnimationTimer anim = new AnimationTimer() {
 			public void handle(long arg0) {
 				cercle.setOpacity(taille);
 				cercle.setScaleX(taille-=0.15);
@@ -36,7 +36,7 @@ class curseurFx{
 			}
 			
 		};
-		jeu.start();
+		anim.start();
 	}
 
 	

@@ -34,7 +34,7 @@ class Bullet {
 				cercle.setCenterY(cercle.getCenterY() + vectY*vitesse);
 				
 				for(int i=0; i<(game.l_ennemis.size()); i++){
-					if (Math.sqrt(Math.pow(cercle.getCenterX() - game.l_ennemis.get(i).x, 2) + Math.pow(cercle.getCenterY() - game.l_ennemis.get(i).y, 2)) < 3+game.l_ennemis.get(i).size){
+					if (Math.sqrt(Math.pow(cercle.getCenterX() - game.l_ennemis.get(i).cercle.getCenterX(), 2) + Math.pow(cercle.getCenterY() - game.l_ennemis.get(i).cercle.getCenterY(), 2)) < 3+game.l_ennemis.get(i).size){
 						game.l_ennemis.get(i).getDamaged(degats);
 						game.pan.getChildren().remove(cercle);
 						this.stop();

@@ -1,5 +1,8 @@
-package game;
+package tyrandules;
 
+import java.util.LinkedList;
+
+import game.Game;
 import javafx.animation.AnimationTimer;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -9,16 +12,25 @@ public class Ennemis {
 	Game game;
 	double vie;
 	double vieTotale;
-	double size;
-	double x;
-	double y;
+	public double size;
+	public double x;
+	public double y;
 	Color color;
-	Circle cercle;
+	public Circle cercle;
 	
 	Rectangle rektVie;
 	Rectangle fontVie;
 	
+	public LinkedList<Double> flagX = new LinkedList<Double>();
+	public LinkedList<Double> flagY = new LinkedList<Double>();
+	
+	double vitesse;
+	Ennemis me;
+	double timer;
+	
+	
 	public Ennemis(double x, double y, Game game, int size){
+		this.me = this;
 		fontVie = new Rectangle();
 		fontVie.setHeight(size/2);
 		fontVie.setWidth(size*2.2);
@@ -68,29 +80,3 @@ public class Ennemis {
 	
 }
 
-
-
-class EnnemiPassif extends Ennemis {
-		
-	public EnnemiPassif(double x, double y, Game game) {
-		super(x,y,game,7);
-		game.l_ennemis.add((Ennemis)this);
-		this.game = game;
-		this.size = 7;
-		this.x = x;
-		this.y = y;
-		this.cercle = new Circle(this.size);
-		this.cercle.setCenterX(x);
-		this.cercle.setCenterY(y);
-		this.color = Color.RED;
-		this.cercle.setFill(color);
-		this.cercle.setOpacity(0.8);
-		this.game.pan.getChildren().add(cercle);
-		
-		this.vie = 4;
-		this.vieTotale = 4;
-		
-	}
-	
-	
-}
