@@ -1,10 +1,10 @@
-package game;
+package util;
 
 import javafx.scene.layout.Pane;
 
 public class CustomPanel extends Pane{
 
-	double x, y, w, h;
+	public double x, y, w, h;
 	
 	public CustomPanel(double w, double h) {
 		super();

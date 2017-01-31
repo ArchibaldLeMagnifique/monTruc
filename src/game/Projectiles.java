@@ -3,6 +3,7 @@ package game;
 import javafx.animation.AnimationTimer;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import util.Point;
 
 class Bullet {
 
@@ -28,7 +29,7 @@ class Bullet {
 	}
 	
 	public void start() {
-		AnimationTimer jeu = new AnimationTimer() {
+		AnimationTimer anim = new AnimationTimer() {
 			public void handle(long arg0) {
 				cercle.setCenterX(cercle.getCenterX() + vectX*vitesse);
 				cercle.setCenterY(cercle.getCenterY() + vectY*vitesse);
@@ -50,8 +51,8 @@ class Bullet {
 				}
 			}
 		};
-		game.aPauser.add(jeu);
-		jeu.start();
+		game.aPauser.add(anim);
+		anim.start();
 	}
 
 

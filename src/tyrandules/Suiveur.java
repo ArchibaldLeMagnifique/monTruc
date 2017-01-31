@@ -7,24 +7,17 @@ import javafx.scene.shape.Circle;
 
 public class Suiveur extends Ennemis{
 
-	public Suiveur (double x, double y, Game game, double vitesse) {
-		super(x,y,game,7);
+	public Suiveur (double x, double y, Game game, double vitesse, int taille, int vie) {
+		super(x,y,game,taille);
 		this.vitesse = vitesse;
 		game.l_ennemis.add((Ennemis)this);
 		this.game = game;
-		this.size = 7;
+		this.size = taille;
 		this.x = x;
 		this.y = y;
-		this.cercle = new Circle(this.size);
-		this.cercle.setCenterX(x);
-		this.cercle.setCenterY(y);
-		this.color = Color.RED;
-		this.cercle.setFill(color);
-		this.cercle.setOpacity(0.8);
-		this.game.pan.getChildren().add(cercle);
 		
-		this.vie = 4;
-		this.vieTotale = 4;
+		this.vie = vie;
+		this.vieTotale = vie;
 		this.timer = 0;
 		start();
 		
@@ -50,20 +43,36 @@ public class Suiveur extends Ennemis{
 					dx = dx / mod * vitesse;
 					dy = dy / mod * vitesse;
 					boolean deplacement = true;
+					Ennemis e = null;
 					for(int i=0; i<game.l_ennemis.size(); i++){
-						if (game.distance(cercle.getCenterX() + dx, cercle.getCenterY() + dy, game.l_ennemis.get(i).cercle.getCenterX(), game.l_ennemis.get(i).cercle.getCenterY()) < game.l_ennemis.get(i).size + size & game.l_ennemis.get(i)!=me) deplacement = false;
+						if (game.distance(cercle.getCenterX() + dx, cercle.getCenterY() + dy, game.l_ennemis.get(i).cercle.getCenterX(), game.l_ennemis.get(i).cercle.getCenterY()) < game.l_ennemis.get(i).size + size & game.l_ennemis.get(i)!=me) {
+							deplacement = false;
+							e = game.l_ennemis.get(i);
+						}
 					}
 					if (deplacement){
-						cercle.setCenterX(cercle.getCenterX() + dx);
-						cercle.setCenterY(cercle.getCenterY() + dy);
-						fontVie.setX(cercle.getCenterX()-fontVie.getWidth()/2);
-						fontVie.setY(cercle.getCenterY()-size*1.7);
-						rektVie.setX(cercle.getCenterX()-fontVie.getWidth()/2);
-						rektVie.setY(cercle.getCenterY()-size*1.7);
-					}		
+						deplace(dx,dy);
+					}else{
+						double midX = cercle.getCenterX() + dx;
+						double midY = cercle.getCenterY() + dy;
+						double vectX = midX - e.cercle.getCenterX();
+						double vectY = midY - e.cercle.getCenterY();
+						double norme = Math.sqrt(Math.pow(vectX, 2) + Math.pow(vectY, 2));
+						if (norme == 0){
+							e.deplace(dx/2, dy/2);
+						}else{
+							vectX /= norme;
+							vectY /= norme;
+							double dist = game.distance(cercle.getCenterX() + dx, cercle.getCenterY() + dy, e.cercle.getCenterX(), e.cercle.getCenterY());
+							double ecart = cercle.getRadius() + e.cercle.getRadius() - dist;
+							e.deplace(-vectX * ecart/2, -vectY * ecart/2);
+							deplace(vectX * ecart/2, vectY * ecart/2);
+						}
+					}
 				}
 			}
 		};
+		game.aPauser.add(anim);
 		anim.start();
 	}
 }

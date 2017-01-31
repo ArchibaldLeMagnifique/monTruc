@@ -10,15 +10,16 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
+import util.CustomPanel;
 
 public class MiniMap extends Pane{
 
-	double dimension = 1;
+	public double dimension = 1;
 	double screenSizeW, screenSizeH;
 	double mapSizeW, mapSizeH;
-	double coef=0;
+	public double coef=0;
 	
-	Rectangle rekt;
+	public Rectangle rekt;
 	Rectangle cam;
 	public double camX=0, camY=0;
 	Circle joueur;

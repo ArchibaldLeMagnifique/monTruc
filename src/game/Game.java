@@ -15,9 +15,16 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+import maps.BasicMap;
 import menu.Main;
 import pause.Pause;
 import tyrandules.*;
+import util.Graphe;
+import util.MyPolygon;
+import util.Point;
+import util.Segment;
+import util.Cell;
+import util.CustomPanel;
 
 public class Game {
 
@@ -25,6 +32,7 @@ public class Game {
 	Scene sceneGame;
 	LinkedList<Polygon> l_obs = new LinkedList<Polygon>();
 	LinkedList<Double> l_pts = new LinkedList<Double>();
+	public LinkedList<LinkedList<Double>> l_l_triangles = new LinkedList<LinkedList<Double>>();;
 
 	double depCamX, depCamY, depCamX2, depCamY2;
 	
@@ -42,16 +50,15 @@ public class Game {
 	LinkedList<Double> flagX = new LinkedList<Double>();
 	LinkedList<Double> flagY = new LinkedList<Double>();
 	
-	public int screenWidth, screenHeight;
-	public int mapSizeW = 3200;
-	public int mapSizeH = 2500;
+	public int screenWidth, screenHeight, mapSizeW, mapSizeH;
+
 	Main monPapa; Game me;
 	public CustomPanel pan;
-	public LinkedList<LinkedList<Double>> l_l_triangles;
 	public LinkedList<Ennemis> l_ennemis = new LinkedList<Ennemis>();
 	public ArrayList<AnimationTimer> aPauser;
 	AnimationTimer jeu;
-	UI ui;
+	public UI ui;
+	int vague = 1;
 
 	public Game(int W, int H, Stage primaryStage, Main main){
 		this.aPauser = new ArrayList<AnimationTimer> ();
@@ -93,147 +100,52 @@ public class Game {
 
 		primaryStage.setScene(sceneGame);
 
-		pan = new CustomPanel(mapSizeW, mapSizeH);
+		
+		BasicMap map = new BasicMap();
+		this.mapSizeH = map.mapSizeH;
+		this.mapSizeW = map.mapSizeW;
+		
+		pan = new CustomPanel(map.mapSizeW, map.mapSizeH);
 		pan.setPrefWidth(screenWidth);
 		pan.setPrefHeight(screenHeight);
 		rootGame.getChildren().add(pan);
+
+		pan.translateX(map.mapSizeW/2-screenWidth/2);
+		pan.translateY(map.mapSizeH/2-screenHeight/2+40);
 		
 		Rectangle leFont = new Rectangle();
-		leFont.setWidth(mapSizeW);
-		leFont.setHeight(mapSizeH);
+		leFont.setWidth(map.mapSizeW);
+		leFont.setHeight(map.mapSizeH);
 		leFont.getStyleClass().add("back1");
 		pan.getChildren().add(leFont);
 
-		Polygon poly = new Polygon();
-		poly.getPoints().addAll(new Double[] { 330.0, 270.0, 270.0, 330.0, 300.0, 500.0, 330.0, 520.0, 360.0, 500.0,
-				400.0, 380.0, 650.0, 360.0, 720.0, 330.0, 700.0, 300.0, 500.0, 270.0 });
-		poly.getStyleClass().add("obstacle1");
-		l_obs.add(poly);
-		pan.getChildren().add(poly);
-
-		poly = new Polygon();
-		poly.getPoints().addAll(new Double[] { 600.0, 600.0, 500.0, 800.0, 570.0, 870.0, 645.0, 790.0, 800.0, 730.0, 953.0, 780.0, 1200.0, 980.0, 1300.0, 930.0, 1330.0, 700.0, 1400.0, 450.0, 1300.0, 250.0, 1170.0, 260.0, 1120.0, 400.0, 1050.0, 500.0, 830.0, 530.0});
-		poly.getStyleClass().add("obstacle1");
-		l_obs.add(poly);
-		pan.getChildren().add(poly);
 		
-		int fin = l_obs.size();
-		for(int i=0; i<fin; i++){
-			poly = new Polygon();
-			for(int j=0; j<l_obs.get(i).getPoints().size(); j++){
-				if (j%2==0){
-					poly.getPoints().add(mapSizeW - l_obs.get(i).getPoints().get(j));
-				}else{
-					poly.getPoints().add(mapSizeH - l_obs.get(i).getPoints().get(j));
-				}
-			}
-			poly.getStyleClass().add("obstacle1");
-			l_obs.add(poly);
-			pan.getChildren().add(poly);
-			poly = new Polygon();
-			for(int j=0; j<l_obs.get(i).getPoints().size(); j++){
-				if (j%2==0){
-					poly.getPoints().add(l_obs.get(i).getPoints().get(j));
-				}else{
-					poly.getPoints().add(mapSizeH - l_obs.get(i).getPoints().get(j));
-				}
-			}
-			poly.getStyleClass().add("obstacle1");
-			l_obs.add(poly);
-			pan.getChildren().add(poly);
-			poly = new Polygon();
-			for(int j=0; j<l_obs.get(i).getPoints().size(); j++){
-				if (j%2==0){
-					poly.getPoints().add(mapSizeW - l_obs.get(i).getPoints().get(j));
-				}else{
-					poly.getPoints().add(l_obs.get(i).getPoints().get(j));
-				}
-			}
-			poly.getStyleClass().add("obstacle1");
-			l_obs.add(poly);
-			pan.getChildren().add(poly);
-		}
+		map.createMap(l_obs, pan, l_l_triangles, l_pts);
 		
-		//---   TRIANGULATION   ---
-		l_l_triangles = new LinkedList<LinkedList<Double>>();
-		for(int k=0; k<l_obs.size(); k++){
-			poly = l_obs.get(k);
-			int i;
-			LinkedList<Double> l_triangles = new LinkedList<Double>();
-			Polygon poly2 = new Polygon();
-			for (i = 0; i < poly.getPoints().size(); i++) {poly2.getPoints().add(poly.getPoints().get(i));}
-			i=0;
-			double dd = 0;
-			while (poly2.getPoints().size()>=6 & i<40) {
-				double Ax = (double) poly2.getPoints().toArray()[(2 * i) % poly2.getPoints().size()];
-				double Ay = (double) poly2.getPoints().toArray()[(2 * i + 1) % poly2.getPoints().size()];
-				double Bx = (double) poly2.getPoints().toArray()[(2 * i + 2) % poly2.getPoints().size()];
-				double By = (double) poly2.getPoints().toArray()[(2 * i + 3) % poly2.getPoints().size()];
-				double Cx = (double) poly2.getPoints().toArray()[(2 * i + 4) % poly2.getPoints().size()];
-				double Cy = (double) poly2.getPoints().toArray()[(2 * i + 5) % poly2.getPoints().size()];
-				double Dx = Bx - Ax; double Dy = By - Ay;
-				double Tx = Cx - Ax; double Ty = Cy - Ay;
-				double d = Dx * Ty - Dy * Tx;
-				Segment s = new Segment(new Point(Ax,Ay), new Point(Cx,Cy));
-				MyPolygon p = new MyPolygon();
-				for(int n=0; n<poly2.getPoints().toArray().length/2;n++){
-					p.addVertex(((Double)poly2.getPoints().toArray()[2*n]).intValue(),  ((Double)poly2.getPoints().toArray()[2*n+1]).intValue());
-				}
-				if (dd == 0){
-					dd = d;
-				}else{
-					if (d*dd >= 0 & p.IsFullInside(s)) {
-						l_triangles.add(Ax); l_triangles.add(Ay);
-						l_triangles.add(Bx); l_triangles.add(By);
-						l_triangles.add(Cx); l_triangles.add(Cy);
-						poly2.getPoints().remove((2 * i + 2) % poly2.getPoints().size());
-						poly2.getPoints().remove((2 * i + 2) % (poly2.getPoints().size()+1));
-						i--;
-					}i++;
-				}
-			}
-			l_l_triangles.add(l_triangles);
-		}
-
-		for(int i=0; i<l_obs.size(); i++){
-			for(int j=0;j<l_obs.get(i).getPoints().size(); j++){
-				l_pts.add(l_obs.get(i).getPoints().get(j));
-			}
-		}
-		
-		// ---   Creation du graphe   ---
 		graphe = new Graphe(l_obs, pan);
 		
 		// ---   Bords   ---
-		poly = new Polygon();
-		poly.getPoints().addAll(new Double[] { 0.0, 0.0, 0.0, 50.0, (double)mapSizeW, 50.0, (double)mapSizeW, 0.0 });
+		Polygon poly = new Polygon();
+		poly.getPoints().addAll(new Double[] { 0.0, 0.0, 0.0, 50.0, (double)map.mapSizeW, 50.0, (double)map.mapSizeW, 0.0 });
 		poly.getStyleClass().add("obstacle1");
 		pan.getChildren().add(poly);
 		poly = new Polygon();
-		poly.getPoints().addAll(new Double[] { 0.0, 0.0, 0.0, (double)mapSizeH, 50.0, (double)mapSizeH, 50.0, 0.0 });
+		poly.getPoints().addAll(new Double[] { 0.0, 0.0, 0.0, (double)map.mapSizeH, 50.0, (double)map.mapSizeH, 50.0, 0.0 });
 		poly.getStyleClass().add("obstacle1");
 		pan.getChildren().add(poly);
 		poly = new Polygon();
-		poly.getPoints().addAll(new Double[] { 0.0, (double)mapSizeH-50, 0.0, (double)mapSizeH, (double)mapSizeW, (double)mapSizeH, (double)mapSizeW, (double)mapSizeH-50 });
+		poly.getPoints().addAll(new Double[] { 0.0, (double)map.mapSizeH-50, 0.0, (double)map.mapSizeH, (double)map.mapSizeW, (double)map.mapSizeH, (double)map.mapSizeW, (double)map.mapSizeH-50 });
 		poly.getStyleClass().add("obstacle1");
 		pan.getChildren().add(poly);
 		poly = new Polygon();
-		poly.getPoints().addAll(new Double[] { (double)mapSizeW-50, 0.0, (double)mapSizeW-50, (double)mapSizeH, (double)mapSizeW, (double)mapSizeH, (double)mapSizeW, 0.0 });
+		poly.getPoints().addAll(new Double[] { (double)map.mapSizeW-50, 0.0, (double)map.mapSizeW-50, (double)map.mapSizeH, (double)map.mapSizeW, (double)map.mapSizeH, (double)map.mapSizeW, 0.0 });
 		poly.getStyleClass().add("obstacle1");
 		pan.getChildren().add(poly);
 
-		j = new Joueur(mapSizeW/2, mapSizeH/2, pan);
+		j = new Joueur(map.mapSizeW/2, map.mapSizeH/2, pan);
 		double vitesse = 4;
 		
-		new Suiveur(mapSizeW/2, mapSizeH/2+400,this,2);
-		new Suiveur(mapSizeW/2+500, mapSizeH/2,this,2);
-		new Suiveur(mapSizeW/2-500, mapSizeH/2,this,2);
-		new Suiveur(mapSizeW/2, mapSizeH/2-400,this,2);
-		
-		
-
-		pan.translateX(mapSizeW/2-screenWidth/2);
-		pan.translateY(mapSizeH/2-screenHeight/2+40);
+		new Vague (vague, this);
 		
 		ui = new UI(rootGame, this);
 		
@@ -372,7 +284,7 @@ public class Game {
 		pan.setOnMouseDragged(new EventHandler<MouseEvent>() {
 			public void handle(MouseEvent m) {
 				mouseX = m.getScreenX()-pan.x; mouseY = m.getScreenY()-pan.y;
-				if (m.getX() > 50 & m.getX() < mapSizeW-50 & m.getY() > 50 & m.getY() < mapSizeH-50 & m.getButton().toString()=="SECONDARY") {
+				if (m.getX() > 50 & m.getX() < map.mapSizeW-50 & m.getY() > 50 & m.getY() < map.mapSizeH-50 & m.getButton().toString()=="SECONDARY") {
 					findPath(j.x,j.y, m.getX(), m.getY(), l_l_triangles, pan, me);
 				}
 				depCamX2 = 0;
@@ -398,7 +310,7 @@ public class Game {
 				if (m.getButton().toString() == "PRIMARY") {
 
 				}
-				if (m.getButton().toString() == "SECONDARY" & m.getX() > 50 & m.getX() < mapSizeW-50 & m.getY() > 50 & m.getY() < mapSizeH-50) {
+				if (m.getButton().toString() == "SECONDARY" & m.getX() > 50 & m.getX() < map.mapSizeW-50 & m.getY() > 50 & m.getY() < map.mapSizeH-50) {
 					clicDroit = true;
 					sceneGame.setCursor(Cursor.NONE);
 					findPath(j.x,j.y, m.getX(), m.getY(), l_l_triangles, pan, me);
@@ -444,7 +356,7 @@ public class Game {
 		double[] d = new double[nb_sommets];
 		int[] predecesseur = new int[nb_sommets];
 		LinkedList<Integer> sommets = new LinkedList<Integer> ();
-		LinkedList<LinkedList<cell>> graphe_complet = new LinkedList<LinkedList<cell>>();
+		LinkedList<LinkedList<Cell>> graphe_complet = new LinkedList<LinkedList<Cell>>();
 		//---   Initialisation   ---
 		graphe_complet.add(graphe.getDebut());
 		for(int i=0; i<nb_sommets; i++){
@@ -455,10 +367,10 @@ public class Game {
 		graphe_complet.add(graphe.getFin());
 		d[0]=0;
 		for(int i=0; i<graphe_complet.getLast().size(); i++){
-			graphe_complet.get(graphe_complet.getLast().get(i).getPoint()).add(new cell(nb_sommets-1, graphe_complet.getLast().get(i).getDistance()));
+			graphe_complet.get(graphe_complet.getLast().get(i).getPoint()).add(new Cell(nb_sommets-1, graphe_complet.getLast().get(i).getDistance()));
 		}
 		for(int i=0; i<graphe_complet.getFirst().size(); i++){
-			graphe_complet.get(graphe_complet.getFirst().get(i).getPoint()).addFirst(new cell(0, graphe_complet.getFirst().get(i).getDistance()));
+			graphe_complet.get(graphe_complet.getFirst().get(i).getPoint()).addFirst(new Cell(0, graphe_complet.getFirst().get(i).getDistance()));
 		}
 
 		
@@ -475,8 +387,8 @@ public class Game {
 			
 		}
 		if(coupe==false){
-			graphe_complet.get(0).addLast(new cell(nb_sommets-1, distance(depX, depY, destX, destY)));
-			graphe_complet.get(nb_sommets-1).addFirst(new cell(0, distance(depX, depY, destX, destY)));
+			graphe_complet.get(0).addLast(new Cell(nb_sommets-1, distance(depX, depY, destX, destY)));
+			graphe_complet.get(nb_sommets-1).addFirst(new Cell(0, distance(depX, depY, destX, destY)));
 		}
 
 		//---   Dijkstra   ---
@@ -531,8 +443,8 @@ public class Game {
 
 		//---   retour a letat initial   ---
 		if (coupe==false){
-			graphe_complet.get(nb_sommets-1).removeFirstOccurrence(new cell(0, distance(depX, depY, destX, destY)));
-			graphe_complet.get(0).removeFirstOccurrence(new cell(nb_sommets-1, distance(depX, depY, destX, destY)));
+			graphe_complet.get(nb_sommets-1).removeFirstOccurrence(new Cell(0, distance(depX, depY, destX, destY)));
+			graphe_complet.get(0).removeFirstOccurrence(new Cell(nb_sommets-1, distance(depX, depY, destX, destY)));
 		}
 		
 		for(int i=0; i<graphe_complet.getLast().size(); i++){

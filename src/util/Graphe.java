@@ -1,32 +1,14 @@
-package game;
+package util;
 
 import java.util.LinkedList;
 
 import javafx.scene.shape.Polygon;
 
-class cell {
-	
-	int point;	
-	double distance;
-
-	public cell(int p, double d){
-		this.distance=d;
-		this.point=p;
-	}
-	
-	public int getPoint(){
-		return this.point;
-	}
-	public double getDistance(){
-		return this.distance;
-	}
-}
-
 
 public class Graphe {
 
-	private LinkedList<LinkedList<cell>> graphe = new LinkedList<LinkedList<cell>>();
-	private LinkedList<cell> debut, fin;
+	private LinkedList<LinkedList<Cell>> graphe = new LinkedList<LinkedList<Cell>>();
+	private LinkedList<Cell> debut, fin;
 	
 	public Graphe(LinkedList<Polygon> l_obs, CustomPanel pan) {
 		for (int i = 0; i < l_obs.size(); i++) {
@@ -40,8 +22,8 @@ public class Graphe {
 		}
 	}
 	
-	public LinkedList<cell> updatePts(LinkedList<Polygon> l_obs, double Xa, double Ya){
-		LinkedList<cell> tmp_cell = new LinkedList<cell> ();
+	public LinkedList<Cell> updatePts(LinkedList<Polygon> l_obs, double Xa, double Ya){
+		LinkedList<Cell> tmp_Cell = new LinkedList<Cell> ();
 		int id = 1;
 		for (int k = 0; k < l_obs.size(); k++) {
 			Object[] point2 = l_obs.get(k).getPoints().toArray();
@@ -65,20 +47,20 @@ public class Graphe {
 					}
 
 					if(coupe==false){
-						tmp_cell.add(new cell(id, Math.sqrt(Math.pow(Xb-Xa, 2)+Math.pow(Yb-Ya, 2))));
+						tmp_Cell.add(new Cell(id, Math.sqrt(Math.pow(Xb-Xa, 2)+Math.pow(Yb-Ya, 2))));
 					}
 					
 				}id++;
 			}
 		}
-		return tmp_cell;
+		return tmp_Cell;
 	}
 	
-	public LinkedList<cell> getDebut(){
+	public LinkedList<Cell> getDebut(){
 		return this.debut;
 	}
 	
-	public LinkedList<cell> getFin(){
+	public LinkedList<Cell> getFin(){
 		return this.fin;
 	}
 	
@@ -90,7 +72,7 @@ public class Graphe {
 		this.fin = updatePts(l_obs,Xa,Ya);//  /!\ les distances entre fin et les autres ne sont connues que par fin lui meme
 	}
 	
-	public LinkedList<LinkedList<cell>> getGraphe(){
+	public LinkedList<LinkedList<Cell>> getGraphe(){
 		return this.graphe;
 	}
 	

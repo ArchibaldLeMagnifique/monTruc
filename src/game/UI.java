@@ -14,7 +14,7 @@ public class UI {
 	AnimationTimer shakeAnim;
 	double strength;
 	
-	MiniMap miniMap;
+	public MiniMap miniMap;
 	WeaponBar weaponBar;
 	Group group;
 	
