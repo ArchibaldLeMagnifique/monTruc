@@ -59,6 +59,9 @@ public class Game {
 	AnimationTimer jeu;
 	public UI ui;
 	int vague = 1;
+	
+	long crystals = 0L;
+	long researchs = 0L;
 
 	public Game(int W, int H, Stage primaryStage, Main main){
 		this.aPauser = new ArrayList<AnimationTimer> ();

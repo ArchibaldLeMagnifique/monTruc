@@ -2,7 +2,6 @@ package maps;
 
 import java.util.LinkedList;
 
-import game.*;
 import javafx.scene.shape.Polygon;
 import util.CustomPanel;
 import util.MyPolygon;

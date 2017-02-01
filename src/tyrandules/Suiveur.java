@@ -2,8 +2,6 @@ package tyrandules;
 
 import game.Game;
 import javafx.animation.AnimationTimer;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 
 public class Suiveur extends Ennemis{
 

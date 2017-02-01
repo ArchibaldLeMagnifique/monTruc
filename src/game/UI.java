@@ -16,6 +16,7 @@ public class UI {
 	
 	public MiniMap miniMap;
 	WeaponBar weaponBar;
+	public ScorePan scorePan;
 	Group group;
 	
 	public UI (Group root, Game game) {
@@ -30,12 +31,15 @@ public class UI {
 		miniMap.translateCamY(game.mapSizeH/2-game.screenHeight/2+40);
 		group.getChildren().add(miniMap);
 		
-		weaponBar = new WeaponBar(game.screenWidth, game.screenHeight, 3);
+		weaponBar = new WeaponBar(game.screenWidth, game.screenHeight, 3, game);
 		game.listeArmes[0] = new Gun(0.5, -1, 8, 1, game);
 		weaponBar.switchWeapon(game.listeArmes[0], 0);
 		game.listeArmes[1] = new MiniGun(0.05, -1, 8, 1, game);
 		weaponBar.switchWeapon(game.listeArmes[1], 1);
 		group.getChildren().add(weaponBar);
+		
+		scorePan = new ScorePan(game);
+		group.getChildren().add(scorePan);
 		
 		group.setOnMouseMoved(new EventHandler<MouseEvent>() {
 			public void handle(MouseEvent m) {
